@@ -37,7 +37,7 @@
             color: var(--text-light);
             overflow-x: hidden;
             scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch; /* Suaviza el scroll en iPhone/iOS */
+            -webkit-overflow-scrolling: touch;
         }
 
         /* --- FONDOS MÁGICOS Y VITRALES --- */
@@ -63,7 +63,7 @@
             z-index: 2;
             pointer-events: none;
             animation: rotateGlass 120s linear infinite;
-            will-change: transform; /* Aceleración por Hardware */
+            will-change: transform;
         }
 
         @keyframes rotateGlass {
@@ -194,7 +194,12 @@
             color: var(--belle-gold);
             text-transform: uppercase;
             text-align: center;
-            animation: pulseGold 2s infinite alternate;
+            animation: pulseGoldText 2s infinite alternate;
+        }
+        
+        @keyframes pulseGoldText {
+            0% { filter: drop-shadow(0 0 5px rgba(244, 208, 63, 0.5)); transform: scale(1); }
+            100% { filter: drop-shadow(0 0 15px rgba(244, 208, 63, 0.8)); transform: scale(1.02); }
         }
 
         /* --- CONTROL DE MÚSICA --- */
@@ -270,16 +275,36 @@
             margin-bottom: 25px;
         }
 
-        .beauty-beast-silhouette {
+        /* --- CONTENEDOR OPTIMIZADO PARA LA SILUETA (CERO LAG) --- */
+        .silhouette-wrapper {
+            position: relative;
             width: 100%;
             max-width: 260px;
             margin: 0 auto 35px;
-            position: relative;
             z-index: 95; /* Resalta por encima del reflector */
-            /* Resplandor dorado fuerte para que la silueta negra contraste */
-            filter: drop-shadow(0 0 20px rgba(244, 208, 63, 0.9)) drop-shadow(0 0 40px rgba(244, 208, 63, 0.6));
-            animation: pulseGold 3s infinite alternate;
-            will-change: transform, filter; /* Evita que se trabe al hacer scroll */
+        }
+        
+        /* Aura brillante barata para la tarjeta de video */
+        .silhouette-glow {
+            content: '';
+            position: absolute;
+            top: 5%; left: 5%; right: 5%; bottom: 5%;
+            background: radial-gradient(circle, rgba(244,208,63,0.9) 0%, rgba(244,208,63,0) 70%);
+            z-index: -1;
+            animation: pulseGlowCheap 3s infinite alternate ease-in-out;
+            will-change: opacity, transform;
+            pointer-events: none;
+        }
+
+        .beauty-beast-silhouette {
+            width: 100%;
+            display: block;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.9)); /* Filtro estático, no animado */
+        }
+
+        @keyframes pulseGlowCheap {
+            0% { opacity: 0.5; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1.15); }
         }
 
         /* --- REFLECTOR DRAMÁTICO --- */
@@ -302,11 +327,6 @@
         @keyframes revealScene {
             0% { opacity: 1; }
             100% { opacity: 0; visibility: hidden; }
-        }
-
-        @keyframes pulseGold {
-            0% { filter: drop-shadow(0 0 15px rgba(244, 208, 63, 0.6)) drop-shadow(0 0 30px rgba(244, 208, 63, 0.3)); transform: scale(1); }
-            100% { filter: drop-shadow(0 0 25px rgba(244, 208, 63, 1)) drop-shadow(0 0 50px rgba(244, 208, 63, 0.8)); transform: scale(1.02); }
         }
 
         /* Banner de Fecha elegante */
@@ -592,8 +612,11 @@
             <h1 class="main-title">Sofía</h1>
             <h2 class="sub-title">Mis XV Años</h2>
             
-            <!-- Silueta Bella y Bestia en PNG -->
-            <img src="sofi1.png" alt="Bella y Bestia" class="beauty-beast-silhouette">
+            <!-- CONTENEDOR OPTIMIZADO PARA LA SILUETA CERO LAG -->
+            <div class="silhouette-wrapper">
+                <div class="silhouette-glow"></div>
+                <img src="sofi1.png" alt="Bella y Bestia" class="beauty-beast-silhouette">
+            </div>
 
             <!-- CONTENEDOR PARA NOMBRE DE INVITADO (ENLACES PERSONALIZADOS) -->
             <div id="guest-name-display" style="display: none; text-align: center; margin-bottom: 35px; z-index: 95; position: relative;"></div>
@@ -728,6 +751,8 @@
         function openInvitation() {
             const intro = document.getElementById('intro-screen');
             intro.classList.add('open');
+            // FIX: Hacemos que la pantalla inicial deje de atrapar los toques instantáneamente
+            intro.style.pointerEvents = 'none'; 
             
             const spotlight = document.getElementById('theatrical-spotlight');
             if(spotlight) spotlight.classList.add('show');
